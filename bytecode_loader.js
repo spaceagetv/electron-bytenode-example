@@ -24,6 +24,7 @@ function loadBytecode(filename) {
   const newFileName = path.parse(sourceFile).name + '.jsc'
   const bytecodeFile = path.join(__dirname, DESTINATION_DIR, newFileName)
   if (!fs.existsSync(bytecodeFile) || (fs.existsSync(sourceFile) && fs.statSync(bytecodeFile).mtimeMs < fs.statSync(sourceFile).mtimeMs)) {
+    console.log(`Compiling ${newFileName}`)
     bytenode.compileFile(sourceFile, bytecodeFile)
   }
   require(bytecodeFile)
