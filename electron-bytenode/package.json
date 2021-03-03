@@ -1,5 +1,5 @@
 {
-  "name": "bytenode-electron",
+  "name": "electron-bytenode",
   "description": "Compile Electron scripts with Bytenode",
   "authors": "Jeff Robbins",
   "version": "1.0.0",

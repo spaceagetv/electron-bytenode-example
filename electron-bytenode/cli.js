@@ -5,7 +5,6 @@ const isElectron = require('is-electron')
 
 const { createElectronBytenode } = require('./index.js')
 
-// only used in subprocess
 const bytenode = require('bytenode')
 
 // console.log(process.argv)
@@ -45,10 +44,14 @@ function createFiles(args) {
     args.splice(destIndex, 2)
   }
   if (args.includes('--loader')) {
+    // is there an argument after --loader?
     const loaderIndex = args.indexOf('--loader')
     loader = args[loaderIndex + 1]
+    // and it doesn't start with "-"
     if (loader && loader[0] === '-') loader = null
+    // remove it (and its argument) from the args array
     args.splice(loaderIndex, loader ? 2 : 1)
+    // if theres no argument, just set loader to true
     loader = loader || true
   }
 
@@ -96,8 +99,8 @@ function addLoader(fileToLoad, loaderFileName) {
   }
   const relativePath = path.relative(path.dirname(loaderFilePath), fileToLoad)
   const template = format(`require('bytenode'); require('./%s')`, relativePath)
-  fs.outputFileSync(loaderFileName, template)
-  console.log('Created loader: %s', loaderFileName)
+  fs.outputFileSync(loaderFilePath, template)
+  console.log('Created loader: %s', loaderFilePath)
 }
 
 function createDirectoryIfNeeded (dir) {
