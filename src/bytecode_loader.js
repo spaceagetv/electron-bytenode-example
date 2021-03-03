@@ -14,7 +14,7 @@ function createDirectoryIfNeeded (name) {
   name = name || DESTINATION_DIR
   const dir = path.join(__dirname, name)
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir)
+    fs.mkdirSync(dir, {recursive: true})
   }
 }
 
