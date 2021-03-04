@@ -1,6 +1,6 @@
 {
-  "name": "electron-bytenode",
-  "productName": "electron-bytenode",
+  "name": "electron-bytenode-example",
+  "productName": "electron-bytenode-example",
   "version": "1.0.0",
   "description": "A minimal Electron application",
   "main": "./.webpack/main",
@@ -44,19 +44,23 @@
         }
       ],
       "plugins": [
-        ["@electron-forge/plugin-webpack", {
-          "mainConfig": "./webpack.main.config.js",
-          "renderer": {
-            "config": "./webpack.renderer.config.js",
-            "entryPoints": [{
-              "html": "./src/renderer/index.html",
-              "js": "./src/renderer/index.js",
-              "name": "main_window"
-            }]
+        [
+          "@electron-forge/plugin-webpack",
+          {
+            "mainConfig": "./webpack.main.config.js",
+            "renderer": {
+              "config": "./webpack.renderer.config.js",
+              "entryPoints": [
+                {
+                  "html": "./src/renderer/index.html",
+                  "js": "./src/renderer/index.js",
+                  "name": "main_window"
+                }
+              ]
+            }
           }
-        }]
+        ]
       ]
-
     }
   },
   "devDependencies": {
@@ -66,7 +70,8 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
     "@electron-forge/plugin-webpack": "^6.0.0-beta.54",
-    "electron": "^12.0.0"
+    "electron": "^12.0.0",
+    "electron-bytenode": "github:spaceagetv/electron-bytenode"
   },
   "dependencies": {
     "bytenode": "^1.1.7",
