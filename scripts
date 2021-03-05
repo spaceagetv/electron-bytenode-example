@@ -1,5 +1,0 @@
-bytenode -c ./src/main.js
-^^ works
-
-electron node_modules/bytenode/cli.js -c ./src/main.js
-^^ works!
