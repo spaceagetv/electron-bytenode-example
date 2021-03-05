@@ -56,7 +56,7 @@
                   "js": "./src/renderer/index.js",
                   "name": "main_window",
                   "preload": {
-                    "js": "./src/renderers/preload.js"
+                    "js": "./src/renderer/preload.js"
                   }
                 }
               ]
