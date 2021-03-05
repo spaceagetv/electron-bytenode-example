@@ -6,5 +6,5 @@
 // process.
 
 window.addEventListener('DOMContentLoaded', () => {
-  document.body.append(' index.js javascript loaded</p>')
+  document.body.append(' index.js javascript loaded')
 })
