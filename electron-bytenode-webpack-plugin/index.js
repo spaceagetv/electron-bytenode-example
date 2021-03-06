@@ -1,11 +1,11 @@
 const Module = require('module')
+const { Plugin } = require('webpack')
 // const bytenode = require('bytenode')
 const eBytenode = require('electron-bytenode')
+const fs = require('fs')
+const util = require('util')
 
 require('v8').setFlagsFromString('--no-lazy')
-
-
-require('webpack').LoaderOptionsPlugin
 
 /*
 Things I need to do:
@@ -20,20 +20,32 @@ Hooks, I'll probably want to use:
 */
 
 /**
- * @type {LoaderOptionsPlugin}
+ * @type {Plugin}
  */
 module.exports = class ElectronBytenodeWebpackPlugin {
-  constructor (options = {}) {
+  constructor(options = {}) {
     this.name = 'ElectronBytenodeWebpackPlugin'
     this.options = Object.assign({
       compileAsModule: true,
-      keepSource: false
+      keepSource: false,
+      replaceWithLoader: true
     }, options)
   }
 
-  apply (compiler) {
+  apply(compiler) {
+    // Before compiling
+    compiler.hooks.afterResolvers.tap(this.name, async (compiler) => {
+      console.log('%s afterResolvers', this.name, compiler)
+      // fs.writeFileSync('compilation.txt', util.inspect(compilation, 7))
+      // // For all .js files
+      // for (const filename in compilation.assets) {
+
+      // }
+    })
+
     // Before emitting compiled files
-    compiler.hooks.emit.tap(this.name, compilation => {
+    compiler.hooks.emit.tapAsync(this.name, async (compilation, callback) => {
+      fs.writeFileSync('compilation.txt', util.inspect(compilation, 7))
       // For all .js files
       for (const filename in compilation.assets) {
         if (/\.js$/.test(filename)) {
@@ -42,8 +54,7 @@ module.exports = class ElectronBytenodeWebpackPlugin {
           if (this.options.compileAsModule) {
             source = Module.wrap(source)
           }
-          eBytenode.createElectronBytenode()
-          const bytecode = eBytenode.compileCode(source)
+          const bytecode = await eBytenode.compileCode(source)
           compilation.assets[filename.replace('.js', '.jsc')] = {
             source: () => bytecode,
             size: () => bytecode.length
@@ -51,8 +62,16 @@ module.exports = class ElectronBytenodeWebpackPlugin {
           if (!this.options.keepSource) {
             delete compilation.assets[filename]
           }
+          if (this.options.replaceWithLoader) {
+            const loader = eBytenode.loaderCode(filename.replace('.js', '.jsc'))
+            compilation.assets[filename] = {
+              source: () => loader,
+              size: () => loader.length
+            }
+          }
         }
       }
+      callback()
     })
   }
- }
+}
