@@ -1,3 +1,5 @@
+const ElectronBytenodeWebpackPlugin = require("./electron-bytenode-webpack-plugin");
+
 const rules = require('./webpack.rules');
 
 rules.push({
@@ -10,4 +12,5 @@ module.exports = {
   module: {
     rules,
   },
+  plugins: [new ElectronBytenodeWebpackPlugin()]
 };

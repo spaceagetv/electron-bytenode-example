@@ -11,8 +11,5 @@ module.exports = {
   module: {
     rules: require("./webpack.rules")
   },
-  plugins: [new ElectronBytenodeWebpackPlugin({
-    // keepSource: true,
-    // replaceWithLoader: false
-  })]
+  plugins: [new ElectronBytenodeWebpackPlugin()]
 }

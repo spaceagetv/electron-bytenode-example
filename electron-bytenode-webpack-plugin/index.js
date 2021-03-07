@@ -3,6 +3,7 @@ const Module = require('module')
 // const bytenode = require('bytenode')
 const electronBytenode = require('electron-bytenode')
 const fs = require('fs')
+const path = require('path')
 const util = require('util')
 
 require('v8').setFlagsFromString('--no-lazy')
@@ -62,8 +63,9 @@ module.exports = class ElectronBytenodeWebpackPlugin {
             delete compilation.assets[filename]
           }
           if (this.options.replaceWithLoader) {
-            console.log('Adding Bytnode loader for %s', filename)
-            const loader = electronBytenode.loaderCode(filename.replace('.js', '.jsc'))
+            // console.log('Adding Bytnode loader for %s', filename)
+            const relativePath = path.parse(filename).base.replace('.js', '.jsc')
+            const loader = electronBytenode.loaderCode(relativePath)
             compilation.assets[filename] = {
               source: () => loader,
               size: () => loader.length
