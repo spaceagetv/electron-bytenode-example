@@ -1,7 +1,7 @@
 const Module = require('module')
-const { Plugin } = require('webpack')
+// const { Plugin } = require('webpack')
 // const bytenode = require('bytenode')
-const eBytenode = require('electron-bytenode')
+const electronBytenode = require('electron-bytenode')
 const fs = require('fs')
 const util = require('util')
 
@@ -15,7 +15,6 @@ Things I need to do:
 3. Run the loader files through webpack.
 
 Hooks, I'll probably want to use:
-
 
 */
 
@@ -35,7 +34,7 @@ module.exports = class ElectronBytenodeWebpackPlugin {
   apply(compiler) {
     // Before compiling
     compiler.hooks.afterResolvers.tap(this.name, async (compiler) => {
-      console.log('%s afterResolvers', this.name, compiler)
+      // console.log('%s afterResolvers', this.name, compiler)
       // fs.writeFileSync('compilation.txt', util.inspect(compilation, 7))
       // // For all .js files
       // for (const filename in compilation.assets) {
@@ -45,16 +44,16 @@ module.exports = class ElectronBytenodeWebpackPlugin {
 
     // Before emitting compiled files
     compiler.hooks.emit.tapAsync(this.name, async (compilation, callback) => {
-      fs.writeFileSync('compilation.txt', util.inspect(compilation, 7))
+      fs.writeFileSync('compilation.txt', util.inspect(compilation, true, 4))
       // For all .js files
       for (const filename in compilation.assets) {
         if (/\.js$/.test(filename)) {
           // Compile them to v8 bytecode and emit them as .jsc files
-          let source = compilation.assets[filename].source()
-          if (this.options.compileAsModule) {
-            source = Module.wrap(source)
-          }
-          const bytecode = await eBytenode.compileCode(source)
+          const source = compilation.assets[filename].source()
+          // if (this.options.compileAsModule) {
+          //   source = Module.wrap(source)
+          // }
+          const bytecode = await electronBytenode.compileCode(source)
           compilation.assets[filename.replace('.js', '.jsc')] = {
             source: () => bytecode,
             size: () => bytecode.length
@@ -63,7 +62,8 @@ module.exports = class ElectronBytenodeWebpackPlugin {
             delete compilation.assets[filename]
           }
           if (this.options.replaceWithLoader) {
-            const loader = eBytenode.loaderCode(filename.replace('.js', '.jsc'))
+            console.log('Adding Bytnode loader for %s', filename)
+            const loader = electronBytenode.loaderCode(filename.replace('.js', '.jsc'))
             compilation.assets[filename] = {
               source: () => loader,
               size: () => loader.length

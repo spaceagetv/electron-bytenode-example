@@ -7,12 +7,12 @@ module.exports = {
    */
   entry: "./src/main.js",
   // Put your normal webpack config below here
-  externals: { bytenode: 'bytenode' },
+  // externals: { bytenode: 'bytenode' },
   module: {
-    rules: require("./webpack.rules"),
+    rules: require("./webpack.rules")
   },
   plugins: [new ElectronBytenodeWebpackPlugin({
     // keepSource: true,
     // replaceWithLoader: false
-  })],
-};
+  })]
+}
