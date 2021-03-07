@@ -22,13 +22,14 @@ Hooks, I'll probably want to use:
 /**
  * @type {Plugin}
  */
-module.exports = class ElectronBytenodeWebpackPlugin {
+module.exports = class ElectronBytenodePlugin {
   constructor(options = {}) {
-    this.name = 'ElectronBytenodeWebpackPlugin'
+    this.name = 'ElectronBytenodePlugin'
     this.options = Object.assign({
       compileAsModule: true,
       keepSource: false,
-      replaceWithLoader: true
+      replaceWithLoader: true,
+      exclude: []
     }, options)
   }
 
