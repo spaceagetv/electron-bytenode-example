@@ -20,7 +20,9 @@
   "license": "CC0-1.0",
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "asar": false
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
@@ -83,6 +85,7 @@
   },
   "dependencies": {
     "bytenode": "^1.1.7",
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "is-electron": "^2.2.0"
   }
 }

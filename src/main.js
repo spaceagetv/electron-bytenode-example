@@ -1,10 +1,17 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow } = require('electron')
+const isElectron = require('is-electron')
 // const path = require('path')
 
-console.log('Greetings from main.js')
+// console.log('Greetings from main.js')
+
+if (isElectron()) {
+  console.log('I am Electron!')
+}
 
 function createWindow() {
+  // Create the browser window.
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
@@ -12,7 +19,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
+      // preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
     }
   })
 
