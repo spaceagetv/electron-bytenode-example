@@ -12,5 +12,5 @@ module.exports = {
   module: {
     rules,
   },
-  plugins: [new ElectronBytenodeWebpackPlugin()]
+  // plugins: [new ElectronBytenodeWebpackPlugin()]
 };

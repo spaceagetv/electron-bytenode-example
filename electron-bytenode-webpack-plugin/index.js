@@ -1,6 +1,6 @@
 const Module = require('module')
 // const { Plugin } = require('webpack')
-// const bytenode = require('bytenode')
+const bytenode = require('bytenode')
 const electronBytenode = require('electron-bytenode')
 const fs = require('fs')
 const path = require('path')
@@ -20,6 +20,20 @@ Hooks, I'll probably want to use:
 - beforeCompile? 
 */
 
+/** @typedef {import("webpack/lib/Compiler")} Compiler */
+/** @typedef {import("webpack/lib/Compilation")} Compilation */
+/** @typedef {import("webpack/lib/NormalModule")} NormalModule */
+/** @typedef {import("webpack/lib/ContextModule")} ContextModule */
+/** @typedef {import("webpack/lib/NormalModuleFactory")} NormalModuleFactory */
+/** @typedef {import("webpack/lib/ContextModuleFactory")} ContextModuleFactory */
+/** @typedef {import("webpack/lib/Module")} Module */
+/** @typedef {import("webpack/lib/Chunk")} Chunk */
+/** @typedef {import("webpack/lib/Parser")} Parser */
+/** @typedef {import("webpack/lib/ChunkGroup")} ChunkGroup */
+/** @typedef {import("webpack/lib/Dependency")} Dependency */
+/** @typedef {import("@types/acorn").Node} Node */
+/** @typedef {{normalModuleFactory: NormalModuleFactory, contextModuleFactory: ContextModuleFactory, compilationDependencies: Set<Dependency>}} CompilationParams */
+
 /** @type {import('@types/webpack').Plugin} */
 module.exports = class ElectronBytenodePlugin {
   constructor(options = {}) {
@@ -32,6 +46,7 @@ module.exports = class ElectronBytenodePlugin {
     }, options)
   }
 
+  /** @param {Compiler} compiler */
   apply(compiler) {
     // Before compiling
     compiler.hooks.afterResolvers.tap(this.name, async (compiler) => {
@@ -50,7 +65,7 @@ module.exports = class ElectronBytenodePlugin {
     // })
 
     compiler.hooks.compilation.tap(this.name, (compilation, compilationParams) => {
-      console.log(util.inspect(compilation, true, 7, true))
+      // console.log(util.inspect(compilation, true, 7, true))
       // callback()
     })
 
@@ -61,12 +76,12 @@ module.exports = class ElectronBytenodePlugin {
       for (const filename in compilation.assets) {
         if (/\.js$/.test(filename)) {
           // Compile them to v8 bytecode and emit them as .jsc files
-
-          const source = compilation.assets[filename].source()
-          // if (this.options.compileAsModule) {
-          //   source = Module.wrap(source)
-          // }
-          const bytecode = await electronBytenode.compileCode(source)
+          let source = compilation.assets[filename].source()
+          if (this.options.compileAsModule) {
+            source = Module.wrap(source)
+          }
+          const bytecode = await bytenode.compileElectronCode(source)
+          // const bytecode = await electronBytenode.compileCode(source)
           compilation.assets[filename.replace('.js', '.jsc')] = {
             source: () => bytecode,
             size: () => bytecode.length
