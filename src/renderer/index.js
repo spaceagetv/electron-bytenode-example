@@ -6,5 +6,14 @@
 // process.
 
 window.addEventListener('DOMContentLoaded', () => {
-  document.body.append(' index.js javascript loaded')
+  const replaceText = (selector, text) => {
+    const element = document.getElementById(selector)
+    if (element) element.innerText = text
+  }
+
+  replaceText('renderer', '👍')
+
+  if (__filename) {
+    replaceText('node-renderer', '👍')
+  }
 })

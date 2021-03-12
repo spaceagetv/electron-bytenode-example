@@ -1,38 +1,12 @@
 const Module = require('module')
 // const { Plugin } = require('webpack')
-const bytenode = require('bytenode')
+// const bytenode = require('bytenode')
 const electronBytenode = require('electron-bytenode')
 const fs = require('fs')
 const path = require('path')
 const util = require('util')
 
 require('v8').setFlagsFromString('--no-lazy')
-
-/*
-Things I need to do:
-
-1. (What hook?) Add a loader file to the webpack object so that it can get compiled and 'bytenode' can be added to the package.
-2.? Make sure that webpack is cool with the .jsc file import for an unresolvable file
-3. (Emit) Compile original .js code to .jsc code. A la the webpack-bytecode module.
-4. |-- Add the .jsc file to the webpack object
-
-Hooks, I'll probably want to use:
-- beforeCompile? 
-*/
-
-/** @typedef {import("webpack/lib/Compiler")} Compiler */
-/** @typedef {import("webpack/lib/Compilation")} Compilation */
-/** @typedef {import("webpack/lib/NormalModule")} NormalModule */
-/** @typedef {import("webpack/lib/ContextModule")} ContextModule */
-/** @typedef {import("webpack/lib/NormalModuleFactory")} NormalModuleFactory */
-/** @typedef {import("webpack/lib/ContextModuleFactory")} ContextModuleFactory */
-/** @typedef {import("webpack/lib/Module")} Module */
-/** @typedef {import("webpack/lib/Chunk")} Chunk */
-/** @typedef {import("webpack/lib/Parser")} Parser */
-/** @typedef {import("webpack/lib/ChunkGroup")} ChunkGroup */
-/** @typedef {import("webpack/lib/Dependency")} Dependency */
-/** @typedef {import("@types/acorn").Node} Node */
-/** @typedef {{normalModuleFactory: NormalModuleFactory, contextModuleFactory: ContextModuleFactory, compilationDependencies: Set<Dependency>}} CompilationParams */
 
 /** @type {import('@types/webpack').Plugin} */
 module.exports = class ElectronBytenodePlugin {
@@ -80,8 +54,8 @@ module.exports = class ElectronBytenodePlugin {
           if (this.options.compileAsModule) {
             source = Module.wrap(source)
           }
-          const bytecode = await bytenode.compileElectronCode(source)
-          // const bytecode = await electronBytenode.compileCode(source)
+          // const bytecode = await bytenode.compileElectronCode(source)
+          const bytecode = await electronBytenode.compileCode(source)
           compilation.assets[filename.replace('.js', '.jsc')] = {
             source: () => bytecode,
             size: () => bytecode.length
@@ -93,6 +67,11 @@ module.exports = class ElectronBytenodePlugin {
             // console.log('Adding Bytnode loader for %s', filename)
             const relativePath = path.parse(filename).base.replace('.js', '.jsc')
             const loader = electronBytenode.loaderCode(relativePath)
+
+            // We add the loader code to the compilation.assets here
+            // but the 'emit' hook is too late in the cycle
+            // so this code doesn't get aggregated/bundled and bytenode
+            // is not found
             compilation.assets[filename] = {
               source: () => loader,
               size: () => loader.length

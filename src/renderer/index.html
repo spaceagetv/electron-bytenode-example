@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
   <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
@@ -7,10 +8,15 @@
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <title>Hello World!</title>
   </head>
+
   <body>
     <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <span id="electron-version"></span>.
+    <p>We are using Node.js <span id="node-version"></span>,
+      Chromium <span id="chrome-version"></span>,
+      and Electron <span id="electron-version"></span>.</p>
+    <p>Preload script: <span id="preload">👎</span></p>
+    <p>Renderer script: <span id="renderer">👎</span></p>
+    <p>NodeJS in renderer: <span id="node-renderer">👎</span></p>
   </body>
+
 </html>
