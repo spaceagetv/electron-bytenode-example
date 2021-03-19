@@ -104,6 +104,9 @@ dist
 .tern-port
 *.jsc
 
+# JetBrains IDEs
+.idea/
+
 .webpack/
 compilation.txt
 out/
