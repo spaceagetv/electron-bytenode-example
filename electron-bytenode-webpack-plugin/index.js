@@ -124,6 +124,9 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
           continue
         }
 
+        // I'm sure there's a better way to get this!
+        source = source.children[0]._value
+
         source = this.options.compileAsModule
           ? Module.wrap(source)
           : source
