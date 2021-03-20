@@ -117,19 +117,18 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
     };
 
     compiler.hooks.emit.tapAsync(this.name, async (compilation, callback) => {
-      for (let { name, source } of compilation.getAssets()) {
+      for (const { name, source: asset } of compilation.getAssets()) {
         this.debug('emitting', name)
 
         if (!shouldCompile(name)) {
           continue
         }
 
-        // I'm sure there's a better way to get this!
-        source = source.children[0]._value
+        let source = asset.source();
 
-        source = this.options.compileAsModule
-          ? Module.wrap(source)
-          : source
+        if (this.options.compileAsModule) {
+          source = Module.wrap(source);
+        }
 
         const compiledAssetName = name.replace(outputExtensionRegex, COMPILED_EXTENSION)
         this.debug('compiling to', compiledAssetName)
