@@ -9,7 +9,6 @@ require('v8').setFlagsFromString('--no-lazy')
 
 const COMPILED_EXTENSION = '.jsc';
 
-// TODO: deal with dangling source maps
 // TODO: document things
 // TODO: multiple entry points support
 // TODO: validate against electron-forge's renderer webpack config (depends on multiple entry points support)
@@ -25,6 +24,7 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
       debugLifecycle: false,
       debugLogs: false,
       keepSource: false,
+      preventSourceMaps: true,
       ...options,
     };
   }
@@ -106,9 +106,14 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
 
     compiler.options.externals = externals;
 
+    if (this.options.preventSourceMaps) {
+      compiler.options.devtool = false;
+    }
+
     this.debug('modified options', {
+      devtool: compiler.options.devtool,
       entry: compiler.options.entry,
-      externals,
+      externals: compiler.options.externals,
       output: compiler.options.output,
     });
 
@@ -226,6 +231,10 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
 
       // normalModuleFactory.hooks.module.tap(this.name, function (createdModule, result) {
       //   console.log('normalModuleFactory hook:', 'module', { createdModule, result })
+      // })
+
+      // normalModuleFactory.hooks.afterResolve.tap(this.name, function (data, callback) {
+      //   console.log('normalModuleFactory hook:', 'afterResolve', { data, callback, loaders: data.loaders })
       // })
     })
 
