@@ -92,7 +92,7 @@ module.exports = class ElectronBytenodeWebpackPlugin {
       [outputName]: entryLoader,
     };
 
-    compiler.options.output.filename = '[name].js';
+    compiler.options.output.filename = '[name]' + outputExtension;
 
     let externals = compiler.options.externals;
 
