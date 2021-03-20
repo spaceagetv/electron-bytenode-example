@@ -1,11 +1,12 @@
-const Module = require('module')
-const fs = require('fs')
-const path = require('path')
-const WatchIgnorePlugin = require('webpack/lib/WatchIgnorePlugin')
+const Module = require('module');
+const fs = require('fs');
+const path = require('path');
+const v8 = require('v8');
 
-const electronBytenode = require('electron-bytenode')
+const WatchIgnorePlugin = require('webpack/lib/WatchIgnorePlugin');
+const electronBytenode = require('electron-bytenode');
 
-require('v8').setFlagsFromString('--no-lazy')
+v8.setFlagsFromString('--no-lazy');
 
 const COMPILED_EXTENSION = '.jsc';
 
@@ -14,10 +15,9 @@ const COMPILED_EXTENSION = '.jsc';
 // TODO: validate against electron-forge's renderer webpack config (depends on multiple entry points support)
 // TODO: webpack v5 support
 
-/** @type {import('@types/webpack').Plugin} */
-module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
+module.exports = class ElectronBytenodeWebpackPlugin {
 
-  constructor (options = {}) {
+  constructor(options = {}) {
     this.name = 'ElectronBytenodeWebpackPlugin';
     this.options = {
       compileAsModule: true,
@@ -51,8 +51,7 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
   // externals
   // - ./main.js
 
-  /** @param {Compiler} compiler */
-  apply (compiler) {
+  apply(compiler) {
     this.setupLifecycleLogging(compiler);
 
     const entry = compiler.options.entry;
@@ -123,10 +122,10 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
 
     compiler.hooks.emit.tapAsync(this.name, async (compilation, callback) => {
       for (const { name, source: asset } of compilation.getAssets()) {
-        this.debug('emitting', name)
+        this.debug('emitting', name);
 
         if (!shouldCompile(name)) {
-          continue
+          continue;
         }
 
         let source = asset.source();
@@ -135,22 +134,22 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
           source = Module.wrap(source);
         }
 
-        const compiledAssetName = name.replace(outputExtensionRegex, COMPILED_EXTENSION)
-        this.debug('compiling to', compiledAssetName)
+        const compiledAssetName = name.replace(outputExtensionRegex, COMPILED_EXTENSION);
+        this.debug('compiling to', compiledAssetName);
 
-        const compiledAssetSource = await electronBytenode.compileCode(source)
+        const compiledAssetSource = await electronBytenode.compileCode(source);
 
         compilation.assets[compiledAssetName] = {
           size: () => compiledAssetSource.length,
-          source: () => compiledAssetSource
+          source: () => compiledAssetSource,
         }
 
         if (!this.options.keepSource) {
-          delete compilation.assets[name]
+          delete compilation.assets[name];
         }
       }
 
-      callback()
+      callback();
     })
   }
 
@@ -214,53 +213,52 @@ module.exports = class ElectronBytenodeElectronBytenodeWebpackPlugin {
 
     for (const [name, hook] of Object.entries(compiler.hooks)) {
       hook.tap(this.name, function () {
-        console.log('compiler hook:', name, `(${arguments.length} arguments)`)
-      })
+        console.log('compiler hook:', name, `(${arguments.length} arguments)`);
+      });
     }
 
     compiler.hooks.normalModuleFactory.tap(this.name, normalModuleFactory => {
-      // console.log({ normalModuleFactory })
+      // console.log({ normalModuleFactory });
 
       for (const [name, hook] of Object.entries(normalModuleFactory.hooks)) {
         try {
           hook.tap(this.name, function () {
-            console.log('normalModuleFactory hook:', name, `(${arguments.length} arguments)`)
-          })
+            console.log('normalModuleFactory hook:', name, `(${arguments.length} arguments)`);
+          });
         } catch (e) {}
       }
 
       // normalModuleFactory.hooks.module.tap(this.name, function (createdModule, result) {
-      //   console.log('normalModuleFactory hook:', 'module', { createdModule, result })
-      // })
+      //   console.log('normalModuleFactory hook:', 'module', { createdModule, result });
+      // });
 
       // normalModuleFactory.hooks.afterResolve.tap(this.name, function (data, callback) {
-      //   console.log('normalModuleFactory hook:', 'afterResolve', { data, callback, loaders: data.loaders })
-      // })
-    })
+      //   console.log('normalModuleFactory hook:', 'afterResolve', { data, callback, loaders: data.loaders });
+      // });
+    });
 
     compiler.hooks.thisCompilation.tap(this.name, compilation => {
       for (const [name, hook] of Object.entries(compilation.hooks)) {
         hook.tap(this.name, function () {
-          console.log('compilation hook:', name, `(${arguments.length} arguments)`)
-        })
+          console.log('compilation hook:', name, `(${arguments.length} arguments)`);
+        });
       }
 
       // compilation.hooks.addEntry.tap(this.name, (context, entry) => {
-      //   console.log({ context, entry })
-      // })
+      //   console.log({ context, entry });
+      // });
 
       // compilation.hooks.chunkAsset.tap(this.name, (chunk, filename) => {
-      //   console.log({ chunk, filename })
-      // })
+      //   console.log({ chunk, filename });
+      // });
 
       // compilation.hooks.afterChunks.tap(this.name, chunks => {
-      //   console.log({ chunks })
-      // })
-      //
+      //   console.log({ chunks });
+      // });
 
       // compilation.hooks.buildModule.tap(this.name, module => {
-      //   console.log(module.constructor.name, { module })
-      // })
-    })
+      //   console.log(module.constructor.name, { module });
+      // });
+    });
   }
 }
