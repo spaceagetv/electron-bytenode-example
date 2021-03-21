@@ -82,7 +82,8 @@
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.3.1"
+    "eslint-plugin-promise": "^4.3.1",
+    "webpack-virtual-modules": "^0.4.2"
   },
   "dependencies": {
     "bytenode": "^1.1.8",

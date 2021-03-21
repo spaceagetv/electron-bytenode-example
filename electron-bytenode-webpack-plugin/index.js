@@ -1,10 +1,9 @@
 const Module = require('module');
-const fs = require('fs');
 const path = require('path');
 const v8 = require('v8');
 
-const WatchIgnorePlugin = require('webpack/lib/WatchIgnorePlugin');
 const electronBytenode = require('electron-bytenode');
+const WebpackVirtualModules = require('webpack-virtual-modules');
 
 v8.setFlagsFromString('--no-lazy');
 
@@ -15,7 +14,7 @@ const COMPILED_EXTENSION = '.jsc';
 // TODO: validate against electron-forge's renderer webpack config (depends on multiple entry points support)
 // TODO: webpack v5 support
 
-module.exports = class ElectronBytenodeWebpackPlugin {
+class ElectronBytenodeWebpackPlugin {
 
   constructor(options = {}) {
     this.name = 'ElectronBytenodeWebpackPlugin';
@@ -78,14 +77,9 @@ module.exports = class ElectronBytenodeWebpackPlugin {
     const compiledImportPath = `./${compiledName}`;
     this.debug('compiled', { compiledName, compiledImportPath });
 
-    this.createLoader(entryLoader, compiledImportPath);
-
-    new WatchIgnorePlugin([entryLoader])
-      .apply(compiler);
-
-    compiler.hooks.done.tap(this.name, () => {
-      fs.unlinkSync(entryLoader);
-    })
+    new WebpackVirtualModules({
+      [entryLoader]: this.createLoaderCode(compiledImportPath),
+    }).apply(compiler);
 
     compiler.options.entry = {
       [compiledName]: entry,
@@ -168,11 +162,6 @@ module.exports = class ElectronBytenodeWebpackPlugin {
       console.debug('');
     }
     console.debug(title, data);
-  }
-
-  createLoader(loaderPath, relativePathToLoad) {
-    const code = this.createLoaderCode(relativePathToLoad);
-    fs.writeFileSync(loaderPath, code, { encoding: 'utf-8' });
   }
 
   createLoaderCode(relativePath) {
@@ -262,3 +251,5 @@ module.exports = class ElectronBytenodeWebpackPlugin {
     });
   }
 }
+
+module.exports = ElectronBytenodeWebpackPlugin;
