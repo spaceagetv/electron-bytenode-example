@@ -7,10 +7,7 @@ const WebpackVirtualModules = require('webpack-virtual-modules');
 
 v8.setFlagsFromString('--no-lazy');
 
-const COMPILED_EXTENSION = '.jsc';
-
 // TODO: document things
-// TODO: multiple entry points support
 // TODO: validate against electron-forge's renderer webpack config (depends on multiple entry points support)
 // TODO: webpack v5 support
 
@@ -28,80 +25,21 @@ class ElectronBytenodeWebpackPlugin {
     };
   }
 
-  // entry: {
-  //   index: './src/loader.js',
-  //   main: './src/main.js'
-  // },
-  // output: {
-  //   filename: '[name].js'
-  // },
-  // externals: './main',
-
-  // src
-  // - main.js
-  //
-  // out
-  // - main.jsc
-  // - index.js > ./main.jsc
-
-  // entries
-  // - main.js
-  // - main-loader.js > ./main.js
-  // externals
-  // - ./main.js
-
   apply(compiler) {
     this.setupLifecycleLogging(compiler);
 
-    const entry = compiler.options.entry;
-    const output = compiler.options.output.filename;
-    this.debug('options', { entry, output });
+    const { entry, externals, loaderChunks, output, virtualModules } = this.processOptions(compiler.options);
 
-    this.checkOptions(entry, output);
-
-    const entryDirectory = path.dirname(entry);
-    const entryExtension = path.extname(entry);
-    const entryName = path.basename(entry, entryExtension);
-    this.debug('entry', { entryDirectory, entryExtension, entryName });
-
-    const entryLoaderName = `${entryName}.loader`;
-    const entryLoader = path.join(entryDirectory, entryLoaderName + entryExtension);
-    this.debug('loader', { entryLoaderName, entryLoader });
-
-    const outputExtension = path.extname(output);
-    const outputExtensionRegex = new RegExp('\\' + outputExtension + '$', 'i');
-    const outputName = path.basename(output, outputExtension);
-    this.debug('output', { outputExtension, outputExtensionRegex, outputName });
-
-    const compiledName = `${outputName}.compiled`;
-    const compiledImportPath = `./${compiledName}`;
-    this.debug('compiled', { compiledName, compiledImportPath });
-
-    new WebpackVirtualModules({
-      [entryLoader]: this.createLoaderCode(compiledImportPath),
-    }).apply(compiler);
-
-    compiler.options.entry = {
-      [compiledName]: entry,
-      [outputName]: entryLoader,
-    };
-
-    compiler.options.output.filename = '[name]' + outputExtension;
-
-    let externals = compiler.options.externals;
-
-    if (externals) {
-      externals = Array.isArray(externals) ? externals : [externals];
-      externals.push(compiledImportPath);
-    } else {
-      externals = compiledImportPath;
-    }
-
+    compiler.options.entry = entry;
     compiler.options.externals = externals;
+    compiler.options.output.filename = output.filename;
 
     if (this.options.preventSourceMaps) {
       compiler.options.devtool = false;
     }
+
+    new WebpackVirtualModules(virtualModules)
+      .apply(compiler);
 
     this.debug('modified options', {
       devtool: compiler.options.devtool,
@@ -110,11 +48,20 @@ class ElectronBytenodeWebpackPlugin {
       output: compiler.options.output,
     });
 
-    const shouldCompile = name => {
-      return outputExtensionRegex.test(name) && name !== output;
-    };
-
     compiler.hooks.emit.tapAsync(this.name, async (compilation, callback) => {
+      const loaderFiles = [];
+
+      for (const chunk of compilation.chunks) {
+        if (loaderChunks.includes(chunk.id)) {
+          loaderFiles.push(...chunk.files);
+        }
+      }
+
+      const outputExtensionRegex = new RegExp('\\' + output.extension + '$', 'i');
+      const shouldCompile = name => {
+        return outputExtensionRegex.test(name) && !loaderFiles.includes(name);
+      };
+
       for (const { name, source: asset } of compilation.getAssets()) {
         this.debug('emitting', name);
 
@@ -128,7 +75,7 @@ class ElectronBytenodeWebpackPlugin {
           source = Module.wrap(source);
         }
 
-        const compiledAssetName = name.replace(outputExtensionRegex, COMPILED_EXTENSION);
+        const compiledAssetName = name.replace(outputExtensionRegex, '.jsc');
         this.debug('compiling to', compiledAssetName);
 
         const compiledAssetSource = await electronBytenode.compileCode(source);
@@ -147,52 +94,100 @@ class ElectronBytenodeWebpackPlugin {
     })
   }
 
-  /**
-   * @param {string} title
-   * @param {Object} data
-   */
-  debug(title, data) {
+  processOptions(options) {
+    const externals = this.preprocessExternals(options.externals);
+    const output = this.preprocessOutput(options.output);
+
+    const entries = [];
+    const loaderChunks = [];
+    const virtualModules = [];
+
+    for (const { entry, compiled, loader } of this.preprocessEntry(options.entry)) {
+      const entryName = entry.name.toLowerCase() === 'main' && !output.isDynamic
+        ? output.name
+        : entry.name;
+
+      entries.push([entryName, loader.location]);
+      loaderChunks.push(entryName);
+
+      const { name, relativeImportPath } = compiled;
+
+      entries.push([name, entry.location]);
+      externals.push(relativeImportPath);
+      virtualModules.push([loader.location, createLoaderCode(relativeImportPath)]);
+    }
+
+    return {
+      entry: Object.fromEntries(entries),
+      externals,
+      loaderChunks,
+      output,
+      virtualModules: Object.fromEntries(virtualModules),
+    };
+  }
+
+  preprocessExternals(externals) {
+    if (Array.isArray(externals)) {
+      return externals;
+    }
+
+    if (typeof externals === 'string') {
+      return [externals];
+    }
+
+    return [];
+  }
+
+  preprocessOutput(output) {
+    const { extension, filename, name } = prepare(output.filename);
+    const isDynamic = filename.includes('[') || filename.includes(']');
+
+    return {
+      extension,
+      filename: isDynamic ? filename : '[name]' + extension,
+      isDynamic,
+      name: isDynamic ? undefined : name,
+    };
+  }
+
+  preprocessEntry(entries) {
+    if (typeof entries === 'string') {
+      entries = [[null, entries]];
+    } else if (Array.isArray(entries)) {
+      entries = entries.map(entry => [null, entry]);
+    } else {
+      entries = Object.entries(entries);
+    }
+
+    return entries.map(([name, location]) => {
+      const entry = prepare(location, name);
+      const compiled = prepare(location, name, name => `${name}.compiled`);
+      const loader = prepare(location, name, name => `${name}.loader`);
+
+      return {
+        entry, compiled, loader,
+      };
+    });
+  }
+
+  debug(title, data, ...rest) {
     if (this.options.debugLogs !== true) {
       return;
     }
 
-    title = title.endsWith(':') ? title : `${title}:`;
-
     if (typeof data === 'object') {
       console.debug('');
+
+      if (typeof title === 'string') {
+        title = title.endsWith(':') ? title : `${title}:`;
+      }
     }
-    console.debug(title, data);
+
+    this.log(title, data, ...rest);
   }
 
-  createLoaderCode(relativePath) {
-    return `
-      require('bytenode');
-      require('${relativePath}');
-    `;
-  }
-
-  checkOptions(entry, output) {
-    if (typeof entry !== 'string') {
-      this.throwOptionError('entry', 'should be a string', 'Multiple entries are not supported right now');
-    }
-
-    if (typeof output !== 'string') {
-      this.throwOptionError('output.filename', 'should be a string');
-    }
-
-    if (output.includes('[') || output.includes(']')) {
-      this.throwOptionError('output.filename', 'should not be dynamic', 'Multiple entries are not supported right now');
-    }
-  }
-
-  throwOptionError(option, message, details) {
-    const error = `[${this.name}]: Option "${option}" ${message}.`;
-
-    if (details) {
-      throw new Error(`${error} Details: ${details}.`);
-    }
-
-    throw new Error(error);
+  log(...messages) {
+    console.debug(`[${this.name}]:`, ...messages);
   }
 
   setupLifecycleLogging(compiler) {
@@ -200,56 +195,77 @@ class ElectronBytenodeWebpackPlugin {
       return;
     }
 
-    for (const [name, hook] of Object.entries(compiler.hooks)) {
-      hook.tap(this.name, function () {
-        console.log('compiler hook:', name, `(${arguments.length} arguments)`);
-      });
-    }
+    this.setupHooksLogging('compiler', compiler.hooks);
 
     compiler.hooks.normalModuleFactory.tap(this.name, normalModuleFactory => {
-      // console.log({ normalModuleFactory });
+      this.setupHooksLogging('normalModuleFactory', normalModuleFactory.hooks);
 
-      for (const [name, hook] of Object.entries(normalModuleFactory.hooks)) {
-        try {
-          hook.tap(this.name, function () {
-            console.log('normalModuleFactory hook:', name, `(${arguments.length} arguments)`);
-          });
-        } catch (e) {}
-      }
+      // this.log({ normalModuleFactory });
 
-      // normalModuleFactory.hooks.module.tap(this.name, function (createdModule, result) {
-      //   console.log('normalModuleFactory hook:', 'module', { createdModule, result });
+      // normalModuleFactory.hooks.module.tap(this.name, (createdModule, result) => {
+      //   this.log(createdModule.constructor.name, { createdModule, result });
       // });
 
-      // normalModuleFactory.hooks.afterResolve.tap(this.name, function (data, callback) {
-      //   console.log('normalModuleFactory hook:', 'afterResolve', { data, callback, loaders: data.loaders });
+      // normalModuleFactory.hooks.afterResolve.tap(this.name, data => {
+      //   this.log({ data, loaders: data.loaders });
       // });
     });
 
-    compiler.hooks.thisCompilation.tap(this.name, compilation => {
-      for (const [name, hook] of Object.entries(compilation.hooks)) {
-        hook.tap(this.name, function () {
-          console.log('compilation hook:', name, `(${arguments.length} arguments)`);
-        });
-      }
+    compiler.hooks.compilation.tap(this.name, compilation => {
+      this.setupHooksLogging('compilation', compilation.hooks);
 
-      // compilation.hooks.addEntry.tap(this.name, (context, entry) => {
-      //   console.log({ context, entry });
-      // });
+      compilation.hooks.addEntry.tap(this.name, (context, entry) => {
+        this.log({ context, entry });
+      });
 
       // compilation.hooks.chunkAsset.tap(this.name, (chunk, filename) => {
-      //   console.log({ chunk, filename });
+      //   this.log({ chunk, filename });
       // });
 
       // compilation.hooks.afterChunks.tap(this.name, chunks => {
-      //   console.log({ chunks });
+      //   this.log({ chunks });
       // });
 
       // compilation.hooks.buildModule.tap(this.name, module => {
-      //   console.log(module.constructor.name, { module });
+      //   this.log(module.constructor.name, { module });
       // });
     });
   }
+
+  setupHooksLogging(type, hooks) {
+    const name = this.name;
+
+    for (const [hookName, hook] of Object.entries(hooks)) {
+      try {
+        hook.tap(name, function () {
+          console.debug(`[${name}]: ${type} hook: ${hookName} (${arguments.length} arguments)`);
+        });
+      } catch (e) {}
+    }
+  }
+}
+
+function createLoaderCode(relativePath) {
+  return `
+      require('bytenode');
+      require('${relativePath}');
+    `;
+}
+
+function prepare(location, name, modifier = name => name) {
+  const directory = path.dirname(location);
+  const extension = path.extname(location);
+  const basename = modifier(path.basename(location, extension));
+  const filename = basename + extension;
+  const relativeImportPath = './' + basename;
+
+  name = name ? modifier(name) : basename;
+  location = path.join(directory, filename);
+
+
+  return {
+    basename, directory, extension, filename, location, name, relativeImportPath,
+  };
 }
 
 module.exports = ElectronBytenodeWebpackPlugin;
