@@ -28,7 +28,23 @@ class ElectronBytenodeWebpackPlugin {
   apply(compiler) {
     this.setupLifecycleLogging(compiler);
 
+    this.debug('original options', {
+      context: compiler.options.context,
+      devtool: compiler.options.devtool,
+      entry: compiler.options.entry,
+      externals: compiler.options.externals,
+      output: compiler.options.output,
+    });
+
     const { entry, externals, loaderChunks, output, virtualModules } = this.processOptions(compiler.options);
+
+    this.debug('processed options', {
+      entry,
+      externals,
+      loaderChunks,
+      output,
+      virtualModules,
+    });
 
     compiler.options.entry = entry;
     compiler.options.externals = externals;
@@ -96,14 +112,14 @@ class ElectronBytenodeWebpackPlugin {
   }
 
   processOptions(options) {
-    const externals = this.preprocessExternals(options.externals);
-    const output = this.preprocessOutput(options.output);
+    const externals = this.preprocessExternals(options);
+    const output = this.preprocessOutput(options);
 
     const entries = [];
     const loaderChunks = [];
     const virtualModules = [];
 
-    for (const { entry, compiled, loader } of this.preprocessEntry(options.entry)) {
+    for (const { entry, compiled, loader } of this.preprocessEntry(options)) {
       const entryName = entry.name.toLowerCase() === 'main' && !output.isDynamic
         ? output.name
         : entry.name;
@@ -127,7 +143,7 @@ class ElectronBytenodeWebpackPlugin {
     };
   }
 
-  preprocessExternals(externals) {
+  preprocessExternals({ externals }) {
     if (Array.isArray(externals)) {
       return externals;
     }
@@ -139,7 +155,7 @@ class ElectronBytenodeWebpackPlugin {
     return [];
   }
 
-  preprocessOutput(output) {
+  preprocessOutput({ output }) {
     const { extension, filename, name } = prepare(output.filename);
     const isDynamic = filename.includes('[') || filename.includes(']');
 
@@ -151,7 +167,7 @@ class ElectronBytenodeWebpackPlugin {
     };
   }
 
-  preprocessEntry(entries) {
+  preprocessEntry({ context, entry: entries }) {
     if (typeof entries === 'string') {
       entries = [[null, entries]];
     } else if (Array.isArray(entries)) {
@@ -161,6 +177,10 @@ class ElectronBytenodeWebpackPlugin {
     }
 
     return entries.map(([name, location]) => {
+      if (!path.isAbsolute(location)) {
+        location = path.resolve(context, location);
+      }
+
       const entry = prepare(location, name);
       const compiled = prepare(location, name, name => `${name}.compiled`);
       const loader = prepare(location, name, name => `${name}.loader`);
