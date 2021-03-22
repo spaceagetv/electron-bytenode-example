@@ -1,16 +1,21 @@
-const ElectronBytenodeWebpackPlugin = require("./electron-bytenode-webpack-plugin");
-
+const ElectronBytenodeWebpackPlugin = require('./electron-bytenode-webpack-plugin');
 const rules = require('./webpack.rules');
 
-rules.push({
-  test: /\.css$/,
-  use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
-});
-
+/** @type {import(‘@types/webpack’).Configuration} */
 module.exports = {
-  // Put your normal webpack config below here
   module: {
-    rules,
+    rules: [
+      ...rules,
+      {
+        test: /\.css$/,
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
+        ],
+      },
+    ],
   },
-  // plugins: [new ElectronBytenodeWebpackPlugin()]
+  // plugins: [
+  //   new ElectronBytenodeWebpackPlugin(),
+  // ],
 };
