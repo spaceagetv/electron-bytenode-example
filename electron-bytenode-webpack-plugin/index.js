@@ -14,6 +14,7 @@ v8.setFlagsFromString('--no-lazy');
 //       instead of mutating the entry points to place the output files beside each other,
 //       we could mutate the relative path import to point to the complex output
 // TODO: deal with entry point loaders (probably just detect and leave them untouched)
+// TODO: deal with the absolute/relative import path on the renderer process
 // TODO: document things
 // TODO: validate against electron-forge's renderer webpack config (depends on multiple entry points support)
 // TODO: webpack v5 support
