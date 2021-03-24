@@ -3,6 +3,8 @@ const path = require('path');
 const v8 = require('v8');
 
 const electronBytenode = require('electron-bytenode');
+
+const ExternalsPlugin = require('webpack/lib/ExternalsPlugin');
 const WebpackVirtualModules = require('webpack-virtual-modules');
 
 v8.setFlagsFromString('--no-lazy');
@@ -32,7 +34,6 @@ class ElectronBytenodeWebpackPlugin {
       context: compiler.options.context,
       devtool: compiler.options.devtool,
       entry: compiler.options.entry,
-      externals: compiler.options.externals,
       output: compiler.options.output,
     });
 
@@ -40,14 +41,12 @@ class ElectronBytenodeWebpackPlugin {
 
     this.debug('processed options', {
       entry,
-      externals,
       loaderChunks,
       output,
       virtualModules,
     });
 
     compiler.options.entry = entry;
-    compiler.options.externals = externals;
     compiler.options.output.filename = output.filename;
 
     if (this.options.preventSourceMaps) {
@@ -55,13 +54,15 @@ class ElectronBytenodeWebpackPlugin {
       compiler.options.devtool = false;
     }
 
+    new ExternalsPlugin("commonjs", externals)
+      .apply(compiler);
+
     new WebpackVirtualModules(virtualModules)
       .apply(compiler);
 
     this.debug('modified options', {
       devtool: compiler.options.devtool,
       entry: compiler.options.entry,
-      externals: compiler.options.externals,
       output: compiler.options.output,
     });
 
@@ -112,24 +113,24 @@ class ElectronBytenodeWebpackPlugin {
   }
 
   processOptions(options) {
-    const externals = this.preprocessExternals(options);
     const output = this.preprocessOutput(options);
 
     const entries = [];
+    const externals = [];
     const loaderChunks = [];
     const virtualModules = [];
 
     for (const { entry, compiled, loader } of this.preprocessEntry(options)) {
-      const entryName = entry.name.toLowerCase() === 'main' && !output.isDynamic
-        ? output.name
-        : entry.name;
+      const entryName = output.make(entry.name);
 
       entries.push([entryName, loader.location]);
       loaderChunks.push(entryName);
 
-      const { name, relativeImportPath } = compiled;
+      const { name, suffix } = compiled;
+      const compiledName = output.make(name, suffix);
+      const relativeImportPath = './' + path.basename(compiledName);
 
-      entries.push([name, entry.location]);
+      entries.push([compiledName, entry.location]);
       externals.push(relativeImportPath);
       virtualModules.push([loader.location, createLoaderCode(relativeImportPath)]);
     }
@@ -143,27 +144,31 @@ class ElectronBytenodeWebpackPlugin {
     };
   }
 
-  preprocessExternals({ externals }) {
-    if (Array.isArray(externals)) {
-      return externals;
-    }
-
-    if (typeof externals === 'string') {
-      return [externals];
-    }
-
-    return [];
-  }
-
   preprocessOutput({ output }) {
-    const { extension, filename, name } = prepare(output.filename);
-    const isDynamic = filename.includes('[') || filename.includes(']');
+    const { directory, extension, name } = prepare(output.filename);
+
+    const originalName = name;
+
+    const make = (name, suffix) => {
+      let made = path.join(directory, originalName);
+
+      if (typeof name === 'string') {
+        made = made.replace('[name]', name);
+      }
+
+      if (typeof suffix === 'string') {
+        made = made.concat(suffix);
+      }
+
+      return made;
+    }
 
     return {
+      directory,
       extension,
-      filename: isDynamic ? filename : '[name]' + extension,
-      isDynamic,
-      name: isDynamic ? undefined : name,
+      filename: '[name]' + extension,
+      make,
+      name,
     };
   }
 
@@ -182,8 +187,8 @@ class ElectronBytenodeWebpackPlugin {
       }
 
       const entry = prepare(location, name);
-      const compiled = prepare(location, name, name => `${name}.compiled`);
-      const loader = prepare(location, name, name => `${name}.loader`);
+      const compiled = prepare(location, name, '.compiled');
+      const loader = prepare(location, name, '.loader');
 
       return {
         entry, compiled, loader,
@@ -273,19 +278,17 @@ function createLoaderCode(relativePath) {
   `;
 }
 
-function prepare(location, name, modifier = name => name) {
+function prepare(location, name, suffix = '') {
   const directory = path.dirname(location);
   const extension = path.extname(location);
-  const basename = modifier(path.basename(location, extension));
+  const basename = path.basename(location, extension) + suffix;
   const filename = basename + extension;
-  const relativeImportPath = './' + basename;
 
-  name = name ? modifier(name) : basename;
+  name = name ?? basename;
   location = path.join(directory, filename);
 
-
   return {
-    basename, directory, extension, filename, location, name, relativeImportPath,
+    basename, directory, extension, filename, location, name, suffix,
   };
 }
 
