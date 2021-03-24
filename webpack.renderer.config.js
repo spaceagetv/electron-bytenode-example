@@ -15,7 +15,7 @@ module.exports = {
       },
     ],
   },
-  // plugins: [
-  //   new ElectronBytenodeWebpackPlugin(),
-  // ],
+  plugins: [
+    new ElectronBytenodeWebpackPlugin(),
+  ],
 };
