@@ -128,7 +128,10 @@ class ElectronBytenodeWebpackPlugin {
 
       const { name, suffix } = compiled;
       const compiledName = output.make(name, suffix);
-      const relativeImportPath = './' + path.basename(compiledName);
+
+      const relativeImportPath = options.target === 'electron-renderer'
+        ? path.join(options.output.path, compiledName)
+        : './' + path.basename(compiledName);
 
       entries.push([compiledName, entry.location]);
       externals.push(relativeImportPath);
