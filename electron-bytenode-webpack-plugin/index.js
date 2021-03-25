@@ -9,10 +9,6 @@ const WebpackVirtualModules = require('webpack-virtual-modules');
 
 v8.setFlagsFromString('--no-lazy');
 
-// TODO: deal with the chunk that is expected to be injected into the html index
-//     - possibly just simplifying the current support for complex output filenames by inverting its logic
-//       instead of mutating the entry points to place the output files beside each other,
-//       we could mutate the relative path import to point to the complex output
 // TODO: deal with entry point loaders (probably just detect and leave them untouched)
 // TODO: deal with the absolute/relative import path on the renderer process
 // TODO: document things
@@ -127,19 +123,21 @@ class ElectronBytenodeWebpackPlugin {
     const virtualModules = [];
 
     for (const { entry, compiled, loader } of this.preprocessEntry(options)) {
-      const entryName = output.make(entry.name);
+      const entryName = output.name ?? entry.name;
 
       entries.push([entryName, loader.location]);
       loaderChunks.push(entryName);
 
-      const { name, suffix } = compiled;
-      const compiledName = output.make(name, suffix);
+      const { name } = compiled;
+
+      const from = output.of(entryName);
+      const to = output.of(name);
 
       const relativeImportPath = options.target === 'electron-renderer'
-        ? path.join(options.output.path, compiledName)
-        : './' + path.basename(compiledName);
+        ? path.join(options.output.path, name)
+        : this.toRelativeImportPath(options.output.path, from, to);
 
-      entries.push([compiledName, entry.location]);
+      entries.push([name, entry.location]);
       externals.push(relativeImportPath);
       virtualModules.push([loader.location, createLoaderCode(relativeImportPath)]);
     }
@@ -153,31 +151,41 @@ class ElectronBytenodeWebpackPlugin {
     };
   }
 
-  preprocessOutput({ output }) {
-    const { directory, extension, name } = prepare(output.filename);
+  toRelativeImportPath(directory, from, to) {
+    from = this.removeExtension(from);
+    to = this.removeExtension(to);
 
-    const originalName = name;
+    const fromLocation = path.join(directory, from);
+    const toLocation = path.join(directory, to);
 
-    const make = (name, suffix) => {
-      let made = path.join(directory, originalName);
+    const relativePath = path.relative(path.dirname(fromLocation), toLocation);
 
-      if (typeof name === 'string') {
-        made = made.replace('[name]', name);
-      }
-
-      if (typeof suffix === 'string') {
-        made = made.concat(suffix);
-      }
-
-      return made;
+    if (relativePath === to) {
+      return `./${relativePath}`;
     }
+
+    return relativePath;
+  }
+
+  removeExtension(location) {
+    return location.substr(0, location.length - path.extname(location).length);
+  }
+
+  preprocessOutput({ output }) {
+    let filename = output.filename;
+
+    const { directory, extension, name } = prepare(filename);
+    const dynamic = /.*[\[\]]+.*/.test(filename);
+
+    filename = dynamic ? filename : '[name]' + extension;
 
     return {
       directory,
+      dynamic,
       extension,
-      filename: '[name]' + extension,
-      make,
-      name,
+      filename,
+      name: dynamic ? undefined : name,
+      of: name => filename.replace('[name]', name),
     };
   }
 
@@ -293,7 +301,7 @@ function prepare(location, name, suffix = '') {
   const basename = path.basename(location, extension) + suffix;
   const filename = basename + extension;
 
-  name = name ?? basename;
+  name = name ? name + suffix : basename;
   location = path.join(directory, filename);
 
   return {

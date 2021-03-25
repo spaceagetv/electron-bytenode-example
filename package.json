@@ -59,10 +59,7 @@
                   "name": "main_window",
                   "preload": {
                     "js": "./src/renderer/preload.js"
-                  },
-                  "additionalChunks": [
-                    "main_window/index"
-                  ]
+                  }
                 }
               ]
             }
