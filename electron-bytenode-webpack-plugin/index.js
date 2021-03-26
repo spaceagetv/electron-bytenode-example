@@ -9,7 +9,6 @@ const WebpackVirtualModules = require('webpack-virtual-modules');
 
 v8.setFlagsFromString('--no-lazy');
 
-// TODO: deal with entry point loaders (probably just detect and leave them untouched)
 // TODO: document things
 // TODO: webpack v5 support
 
@@ -121,10 +120,17 @@ class ElectronBytenodeWebpackPlugin {
     const externals = [];
     const virtualModules = [];
 
-    for (const { entry, compiled, loader } of this.preprocessEntry(options)) {
+    for (const { entry, compiled, loader, middlewares } of this.preprocessEntry(options)) {
       const entryName = output.name ?? entry.name;
 
-      entries.push([entryName, loader.location]);
+      const addMiddlewares = location => {
+        if (Array.isArray(middlewares) && middlewares.length > 0) {
+          return [location, ...middlewares];
+        }
+        return location;
+      };
+
+      entries.push([entryName, addMiddlewares(loader.location)]);
       entryLoaders.push(entryName);
 
       const { name } = compiled;
@@ -142,7 +148,7 @@ class ElectronBytenodeWebpackPlugin {
         relativeImportPath = path.resolve(options.output.path, 'renderer', relativeImportPath);
       }
 
-      entries.push([name, entry.location]);
+      entries.push([name, addMiddlewares(entry.location)]);
       externals.push(relativeImportPath);
       virtualModules.push([loader.location, createLoaderCode(relativeImportPath)]);
     }
@@ -204,6 +210,15 @@ class ElectronBytenodeWebpackPlugin {
     }
 
     return entries.map(([name, location]) => {
+      const middlewares = [];
+
+      if (Array.isArray(location)) {
+        const [entry, ...rest] = location;
+
+        location = entry;
+        middlewares.push(...rest);
+      }
+
       if (!path.isAbsolute(location)) {
         location = path.resolve(context, location);
       }
@@ -213,7 +228,7 @@ class ElectronBytenodeWebpackPlugin {
       const loader = prepare(location, name, '.loader');
 
       return {
-        entry, compiled, loader,
+        entry, compiled, loader, middlewares,
       };
     });
   }
