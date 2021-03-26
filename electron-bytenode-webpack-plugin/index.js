@@ -39,11 +39,11 @@ class ElectronBytenodeWebpackPlugin {
       output: compiler.options.output,
     });
 
-    const { entry, externals, loaderChunks, output, virtualModules } = this.processOptions(compiler.options);
+    const { entry, entryLoaders, externals, output, virtualModules } = this.processOptions(compiler.options);
 
     this.debug('processed options', {
       entry,
-      loaderChunks,
+      entryLoaders,
       output,
       virtualModules,
     });
@@ -69,17 +69,18 @@ class ElectronBytenodeWebpackPlugin {
     });
 
     compiler.hooks.emit.tapAsync(this.name, async (compilation, callback) => {
-      const loaderFiles = [];
+      const entryLoaderFiles = [];
 
-      for (const chunk of compilation.chunks) {
-        if (loaderChunks.includes(chunk.id)) {
-          loaderFiles.push(...chunk.files);
-        }
+      for (const entryLoader of entryLoaders) {
+        const entryPoint = compilation.entrypoints.get(entryLoader);
+        const files = entryPoint?.getFiles() ?? [];
+
+        entryLoaderFiles.push(...files);
       }
 
       const outputExtensionRegex = new RegExp('\\' + output.extension + '$', 'i');
       const shouldCompile = name => {
-        return outputExtensionRegex.test(name) && !loaderFiles.includes(name);
+        return outputExtensionRegex.test(name) && !entryLoaderFiles.includes(name);
       };
 
       for (const { name, source: asset } of compilation.getAssets()) {
@@ -118,15 +119,15 @@ class ElectronBytenodeWebpackPlugin {
     const output = this.preprocessOutput(options);
 
     const entries = [];
+    const entryLoaders = [];
     const externals = [];
-    const loaderChunks = [];
     const virtualModules = [];
 
     for (const { entry, compiled, loader } of this.preprocessEntry(options)) {
       const entryName = output.name ?? entry.name;
 
       entries.push([entryName, loader.location]);
-      loaderChunks.push(entryName);
+      entryLoaders.push(entryName);
 
       const { name } = compiled;
 
@@ -144,8 +145,8 @@ class ElectronBytenodeWebpackPlugin {
 
     return {
       entry: Object.fromEntries(entries),
+      entryLoaders,
       externals,
-      loaderChunks,
       output,
       virtualModules: Object.fromEntries(virtualModules),
     };
