@@ -10,9 +10,7 @@ const WebpackVirtualModules = require('webpack-virtual-modules');
 v8.setFlagsFromString('--no-lazy');
 
 // TODO: deal with entry point loaders (probably just detect and leave them untouched)
-// TODO: deal with the absolute/relative import path on the renderer process
 // TODO: document things
-// TODO: validate against electron-forge's renderer webpack config (depends on multiple entry points support)
 // TODO: webpack v5 support
 
 class ElectronBytenodeWebpackPlugin {
@@ -134,9 +132,15 @@ class ElectronBytenodeWebpackPlugin {
       const from = output.of(entryName);
       const to = output.of(name);
 
-      const relativeImportPath = options.target === 'electron-renderer'
-        ? path.join(options.output.path, name)
-        : this.toRelativeImportPath(options.output.path, from, to);
+      let relativeImportPath = this.toRelativeImportPath(options.output.path, from, to);
+
+      // Use absolute path to load the compiled file in dev mode due to how electron-forge handles
+      // the renderer process code loading (by using a server and not directly from the file system).
+      // This should be safe exactly because it will only be used in dev mode, so the app code will
+      // never be relocated after compiling with webpack and before starting electron.
+      if (options.target === 'electron-renderer' && options.mode === 'development') {
+        relativeImportPath = path.resolve(options.output.path, 'renderer', relativeImportPath);
+      }
 
       entries.push([name, entry.location]);
       externals.push(relativeImportPath);
