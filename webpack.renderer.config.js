@@ -1,4 +1,4 @@
-const ElectronBytenodeWebpackPlugin = require('./electron-bytenode-webpack-plugin');
+const { BytenodeWebpackPlugin } = require('@herberttn/bytenode-webpack-plugin')
 const rules = require('./webpack.rules');
 
 /** @type {import(‘@types/webpack’).Configuration} */
@@ -16,6 +16,6 @@ module.exports = {
     ],
   },
   plugins: [
-    new ElectronBytenodeWebpackPlugin(),
+    new BytenodeWebpackPlugin({ compileForElectron: true }),
   ],
 };
