@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require('electron')
-const isElectron = require('is-electron')
+import { app, BrowserWindow } from 'electron'
+import isElectron from 'is-electron'
+
 // const path = require('path')
 
 // console.log('Greetings from main.js')
