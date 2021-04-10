@@ -1,47 +1,32 @@
-const { BytenodeWebpackPlugin } = require('@herberttn/bytenode-webpack-plugin')
+const { BytenodeWebpackPlugin } = require('@herberttn/bytenode-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const rules = require('./webpack.rules');
 
 /** @type {import(‘@types/webpack’).Configuration} */
 module.exports = {
   output: { devtoolModuleFilenameTemplate: '[absolute-resource-path]' },
-  module:{
+  module: {
     rules: [
       ...rules,
       {
         test: /\.css$/,
-        use: [ 
+        use: [
           {
-            loader: 'style-loader',
+            loader: MiniCssExtractPlugin.loader,
           },
+          // {
+          //   loader: 'style-loader', // re-enable this if disabling MiniCssExtractPlugin
+          // },
           {
             loader: 'css-loader',
           }
         ],
       },
-      {
-        test: /\.less$/,
-        use: [
-          {
-            loader: 'style-loader',
-          },
-          {
-            loader: 'css-loader',
-          },
-          {
-            loader: 'less-loader',
-            options: {
-              lessOptions: {
-                strictMath: true,
-              },
-            },
-          },
-        ],
-      }
     ],
-
   },
 
   plugins: [
-    new BytenodeWebpackPlugin({ compileForElectron: true }),
+    new MiniCssExtractPlugin(),
+    // new BytenodeWebpackPlugin({ compileForElectron: true }),
   ],
 };

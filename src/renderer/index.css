@@ -1,0 +1,16 @@
+body {
+  background-image: url("./flower.jpg");
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: cover;
+  height: 100vh;
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+#css-no {
+  display: none;
+}
+
+#css-yes::after {
+  content: '👍';
+}

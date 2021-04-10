@@ -5,8 +5,10 @@
 // selectively enable features needed in the rendering
 // process.
 
+import './index.css'
+
 window.addEventListener('DOMContentLoaded', () => {
-  const replaceText = (selector, text) => {
+  const replaceText = (selector: string, text: string) => {
     const element = document.getElementById(selector)
     if (element) element.innerText = text
   }
