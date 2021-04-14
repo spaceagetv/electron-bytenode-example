@@ -59,7 +59,10 @@
                   "name": "main_window",
                   "preload": {
                     "js": "./src/renderer/preload.ts"
-                  }
+                  },
+                  "additionalChunks": [
+                    "main_window.compiled"
+                  ]
                 }
               ]
             }

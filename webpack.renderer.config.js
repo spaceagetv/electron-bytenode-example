@@ -27,6 +27,6 @@ module.exports = {
 
   plugins: [
     new MiniCssExtractPlugin(),
-    // new BytenodeWebpackPlugin({ compileForElectron: true }),
+    new BytenodeWebpackPlugin({ compileForElectron: true }),
   ],
 };
