@@ -1,5 +1,4 @@
 const { BytenodeWebpackPlugin } = require('@herberttn/bytenode-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const rules = require('./webpack.rules');
 
 /** @type {import(‘@types/webpack’).Configuration} */
@@ -12,11 +11,8 @@ module.exports = {
         test: /\.css$/,
         use: [
           {
-            loader: MiniCssExtractPlugin.loader,
+            loader: 'style-loader',
           },
-          // {
-          //   loader: 'style-loader', // re-enable this if disabling MiniCssExtractPlugin
-          // },
           {
             loader: 'css-loader',
           }
@@ -26,7 +22,6 @@ module.exports = {
   },
 
   plugins: [
-    new MiniCssExtractPlugin(),
     new BytenodeWebpackPlugin({ compileForElectron: true }),
   ],
 };
