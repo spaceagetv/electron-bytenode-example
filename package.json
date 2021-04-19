@@ -2,7 +2,7 @@
   "name": "electron-bytenode-example",
   "productName": "electron-bytenode-example",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "Example compiling Electron using Bytenode & Webpack",
   "main": "./.webpack/main",
   "scripts": {
     "start": "electron-forge start",
@@ -11,13 +11,15 @@
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/spaceagetv/electron-bytenode-example",
   "keywords": [
     "Electron",
-    "bytenode"
+    "bytenode",
+    "compiler",
+    "v8"
   ],
   "author": "Jeff Robbins",
-  "license": "CC0-1.0",
+  "license": "MIT",
   "config": {
     "forge": {
       "packagerConfig": {

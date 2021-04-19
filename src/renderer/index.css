@@ -4,7 +4,12 @@ body {
   background-position: top right;
   background-size: cover;
   height: 100vh;
-  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+span {
+  color: #555555;
 }
 
 #css-no {
@@ -12,5 +17,5 @@ body {
 }
 
 #css-yes::after {
-  content: '👍';
+  content: "👍";
 }
