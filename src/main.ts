@@ -6,6 +6,7 @@ function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
+      // nodeIntegration must be enabled for Bytenode to work
       nodeIntegration: true,
       contextIsolation: false,
       // Electron Forge entry point ⤵
