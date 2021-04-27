@@ -5,6 +5,8 @@ Example code using [Bytenode](https://github.com/OsamaAbbas/bytenode) + [Bytenod
 Clone or download this repository and then:
 
 ```bash
+git clone https://github.com/spaceagetv/electron-bytenode-example.git
+cd electron-bytenode-example
 npm install
 npm start
 ```
