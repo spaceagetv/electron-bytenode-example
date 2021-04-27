@@ -2,7 +2,7 @@
 
 Example code using [Bytenode](https://github.com/OsamaAbbas/bytenode) + [Bytenode Webpack Plugin](https://github.com/herberttn/bytenode-webpack-plugin) to compile both the render and main processes in an Electron app.
 
-Clone or download this repository and then:
+At the command line:
 
 ```bash
 git clone https://github.com/spaceagetv/electron-bytenode-example.git
