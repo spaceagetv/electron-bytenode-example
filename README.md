@@ -1,5 +1,7 @@
 # electron-bytenode-example
 
+> NOTE: Bytenote Webpack Plugin is **not yet compatible with Webpack 5**. See below for how to help.
+
 Example code using [Bytenode](https://github.com/OsamaAbbas/bytenode) + [Bytenode Webpack Plugin](https://github.com/herberttn/bytenode-webpack-plugin) to compile both the render and main processes in an Electron app.
 
 At the command line:
