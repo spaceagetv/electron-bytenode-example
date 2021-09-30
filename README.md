@@ -13,7 +13,7 @@ npm install
 npm start
 ```
 
-This example uses Herbert Treis Neto's [Bytenode Webpack Plugin](https://github.com/herberttn/bytenode-webpack-plugin) along with Webpack and [Electron Forge Beta.54](https://www.electronforge.io) to bundle and package the application.
+This example uses Herbert Treis Neto's [Bytenode Webpack Plugin](https://github.com/herberttn/bytenode-webpack-plugin) along with Webpack 4 and [Electron Forge Beta.54 or lower](https://www.electronforge.io) to bundle and package the application.
 
 Electron gets pointed at small "loader" files which bundle Bytenode in order to load the binary `.jsc` files containing the original application code.
 
