@@ -19,7 +19,7 @@ Electron gets pointed at small "loader" files which bundle Bytenode in order to 
 
 **NOTES!**
 
-1. You must enable `nodeIntegration` in your BrowserWindow `webPreferences` for Bytenode to work in the rendering process. Alternately, you could put your renderer's Javascript code into a preload script, where Node will be available automatically. This is more secure and generally better practice. (Hint: Use `window.addEventListener('DOMContentLoaded', init)` to wait for the DOM to be available.)
+1. You must enable `nodeIntegration` in your BrowserWindow `webPreferences` for Bytenode to work in the rendering process. Alternately, you could put your renderer's Javascript code into a preload script, where Node will be available automatically. This is more secure and generally better practice. (Hint: Use `window.addEventListener('DOMContentLoaded', init)` to wait for the DOM to be available to your preload script.)
 2. **Bytenode Webpack Plugin is NOT YET COMPATIBLE with Webpack 5**. The latest versions of Electron Forge use Webpack 5, so you must use the **beta.54** version of @electron-forge/plugin-webpack (which uses Webpack 4). **[Reach out to Herbert](https://github.com/herberttn) if you would like to sponsor (or develop) Webpack 5 compatibility** for Bytenode Webpack Plugin. That would be a super awesome thing to do!
 
 ### Links & Related
