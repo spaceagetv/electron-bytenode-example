@@ -110,3 +110,4 @@ dist
 .webpack/
 compilation.txt
 out/
+.DS_Store
