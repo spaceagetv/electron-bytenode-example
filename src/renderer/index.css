@@ -19,3 +19,12 @@ span {
 #css-yes::after {
   content: "👍";
 }
+
+#flower-note {
+  position: absolute;
+  white-space: nowrap;
+  top: 300px;
+  right: 50%;
+  transform: translateX(50%);
+  color: #555555;
+}
