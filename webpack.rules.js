@@ -26,7 +26,7 @@ module.exports = [
   },
   {
     test: /\.(?:ico|gif|png|jpg|jpeg|webp)$/,
-    use: 'url-loader',
+    type: 'asset/resource',
   },
   {
     test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
@@ -37,5 +37,7 @@ module.exports = [
         mimetype: 'image/svg+xml',
       },
     },
+    type: 'javascript/auto',
+    dependency: { not: ['url'] },
   },
 ];
