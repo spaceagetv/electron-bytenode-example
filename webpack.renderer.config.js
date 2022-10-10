@@ -1,9 +1,9 @@
-const { BytenodeWebpackPlugin } = require('@herberttn/bytenode-webpack-plugin');
-const rules = require('./webpack.rules');
+const { BytenodeWebpackPlugin } = require("@dopry/bytenode-webpack-plugin");
+const rules = require("./webpack.rules");
 
 /** @type {import(‘@types/webpack’).Configuration} */
 module.exports = {
-  output: { devtoolModuleFilenameTemplate: '[absolute-resource-path]' },
+  output: { devtoolModuleFilenameTemplate: "[absolute-resource-path]" },
   module: {
     rules: [
       ...rules,
@@ -11,17 +11,15 @@ module.exports = {
         test: /\.css$/,
         use: [
           {
-            loader: 'style-loader',
+            loader: "style-loader",
           },
           {
-            loader: 'css-loader',
-          }
+            loader: "css-loader",
+          },
         ],
       },
     ],
   },
 
-  plugins: [
-    new BytenodeWebpackPlugin({ compileForElectron: true }),
-  ],
+  plugins: [new BytenodeWebpackPlugin({ compileForElectron: true })],
 };
