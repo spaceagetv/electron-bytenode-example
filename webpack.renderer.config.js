@@ -21,7 +21,7 @@ module.exports = {
     ],
   },
 
-  plugins: [
-    new BytenodeWebpackPlugin({ compileForElectron: true }),
-  ],
+  // plugins: [
+  //   new BytenodeWebpackPlugin({ compileForElectron: true }),
+  // ],
 };
