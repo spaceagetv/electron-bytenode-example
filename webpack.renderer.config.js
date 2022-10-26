@@ -21,4 +21,5 @@ module.exports = {
     ],
   },
   plugins: [new BytenodeWebpackPlugin({ compileForElectron: true })],
+  target: 'electron-renderer'
 };

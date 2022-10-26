@@ -60,7 +60,7 @@
                   "js": "./src/renderer/index.ts",
                   "name": "main_window",
                   "preload": {
-                    "js": "./src/renderer/preload.ts"
+                    "config": "webpack.preload.config.js"
                   }
                 }
               ]

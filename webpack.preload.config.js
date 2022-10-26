@@ -3,7 +3,7 @@ const rules = require("./webpack.rules");
 
 /** @type {import(‘@types/webpack’).Configuration} */
 module.exports = {
-  entry: { index: "./src/main.ts" },
+  entry: { preload: "./src/renderer/preload.ts" },
   output: {
     filename: "[name].js",
     devtoolModuleFilenameTemplate: "[absolute-resource-path]",
@@ -12,5 +12,5 @@ module.exports = {
     rules,
   },
   plugins: [new BytenodeWebpackPlugin({ compileForElectron: true })],
-  target: 'electron-main'
+  target: 'electron-preload'
 };
