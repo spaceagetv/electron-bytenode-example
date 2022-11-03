@@ -1,3 +1,4 @@
+/** @type {import("webpack").RuleSetRule[]} */
 module.exports = [
   // Add support for native node modules
   {
