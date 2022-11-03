@@ -77,7 +77,7 @@
     "@electron-forge/maker-squirrel": "^6.0.0",
     "@electron-forge/maker-zip": "^6.0.0",
     "@electron-forge/plugin-webpack": "6.0.0",
-    "@herberttn/bytenode-webpack-plugin": "^2.1.1",
+    "@herberttn/bytenode-webpack-plugin": "^2.2.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "css-loader": "^6.7.1",
     "electron": "^21.2.2",
