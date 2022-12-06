@@ -19,3 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
     replaceText('node-renderer', '👍')
   }
 })
+
+// Export to keep from being tree-shaken by Webpack
+export const SOURCE_TEST =
+  '*** If this text appears in your packaged app, it means Bytenode is NOT configured correctly! #SOURCE-TEST ***'
