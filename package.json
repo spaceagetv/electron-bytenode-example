@@ -9,7 +9,9 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "lint": "echo \"No linting configured\"",
+    "pretest": "npm run package",
+    "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive test/**/*.spec.ts"
   },
   "repository": "https://github.com/spaceagetv/electron-bytenode-example",
   "keywords": [
