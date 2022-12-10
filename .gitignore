@@ -111,3 +111,4 @@ dist
 compilation.txt
 out/
 .DS_Store
+/package-lock.json
