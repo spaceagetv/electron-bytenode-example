@@ -1,7 +1,5 @@
 # electron-bytenode-example
 
-> NOTE: Bytenote Webpack Plugin is **not yet compatible with Webpack 5**. See below for how to help.
-
 Example code using [Bytenode](https://github.com/OsamaAbbas/bytenode) + [Bytenode Webpack Plugin](https://github.com/herberttn/bytenode-webpack-plugin) to compile both the render and main processes in an Electron app.
 
 At the command line:
@@ -15,7 +13,7 @@ npm start
 
 This example uses Herbert Treis Neto's [Bytenode Webpack Plugin](https://github.com/herberttn/bytenode-webpack-plugin) along with Webpack 5 (via [Electron Forge](https://www.electronforge.io)) to bundle and package the application.
 
-Electron gets pointed at small "loader" files which bundle Bytenode in order to load the binary `.jsc` files containing the original application code.
+Electron gets pointed at small "loader" files which use Bytenode in order to load the binary `.jsc` files containing the original application code (compiled for the V8 engine).
 
 **NOTES!**
 
