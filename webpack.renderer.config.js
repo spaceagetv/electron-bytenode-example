@@ -1,7 +1,7 @@
 const { BytenodeWebpackPlugin } = require('@herberttn/bytenode-webpack-plugin');
 const rules = require('./webpack.rules');
 
-/** @type {import(‘@types/webpack’).Configuration} */
+/** @type {import("webpack").Configuration} */
 module.exports = {
   output: { devtoolModuleFilenameTemplate: '[absolute-resource-path]' },
   module: {
@@ -20,8 +20,6 @@ module.exports = {
       },
     ],
   },
-
-  plugins: [
-    new BytenodeWebpackPlugin({ compileForElectron: true }),
-  ],
+  plugins: [new BytenodeWebpackPlugin({ compileForElectron: true })],
+  target: 'electron-renderer'
 };
