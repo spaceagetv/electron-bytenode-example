@@ -4,19 +4,17 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Electron: Main",
-            "protocol": "inspector",
-            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge",
-            "runtimeArgs": [
-                "--remote-debugging-port=9223",
-                "."
-            ],
+            "name": "Debug Main Process",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-nix",
             "windows": {
-                "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
-            }
+              "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-win.cmd"
+            },
+            "runtimeArgs": [],
+            "cwd": "${workspaceFolder}",
+            "timeout": 60000
         },
         {
-            "name": "Electron: Renderer",
+            "name": "Electron Renderer",
             "type": "chrome",
             "request": "attach",
             "port": 9223,
