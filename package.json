@@ -80,7 +80,7 @@
     "@electron-forge/maker-zip": "^6.0.0",
     "@electron-forge/plugin-webpack": "6.0.0",
     "@electron/asar": "^3.2.2",
-    "@herberttn/bytenode-webpack-plugin": "^2.2.0",
+    "@herberttn/bytenode-webpack-plugin": "^2.3.0",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",

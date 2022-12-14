@@ -1,5 +1,5 @@
 import { describe } from 'mocha'
-import chai, { expect } from 'chai'
+import { expect } from 'chai'
 import { listPackage, extractFile } from '@electron/asar'
 import { parseElectronApp, findLatestBuild } from 'electron-playwright-helpers'
 import path from 'path'
