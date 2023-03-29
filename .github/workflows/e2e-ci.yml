@@ -1,9 +1,10 @@
-name: "Tests: E2E"
+name: 'Tests: E2E'
 
 on: [pull_request]
 
 env:
   GITHUB_PR_NUMBER: ${{github.event.pull_request.number}}
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
 jobs:
   tests_e2e:
@@ -18,7 +19,7 @@ jobs:
           - os: ubuntu-latest
             commandPrefix: 'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" --'
           - os: windows-latest
-            commandPrefix: ""
+            commandPrefix: ''
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -29,5 +30,9 @@ jobs:
       - name: Lint
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: npm run lint
-      - name: e2e tests
+      - name: Build
+        run: npm run package
+      - name: mocha tests
         run: ${{ matrix.commandPrefix }} npm test
+      - name: playwright tests
+        run: ${{ matrix.commandPrefix }} npm run test:e2e

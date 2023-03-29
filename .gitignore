@@ -111,3 +111,6 @@ dist
 compilation.txt
 out/
 .DS_Store
+/test-results/
+/playwright-report/
+/playwright/.cache/
